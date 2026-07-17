@@ -1,0 +1,34 @@
+# Trained model artifacts — large binary files, don't belong in Git history
+# (consider Git LFS or a release/asset upload if you need to version them)
+*.pkl
+
+# Raw data
+*.csv
+
+# Generated SQLite database (auto-seeded on first run — don't version it)
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+app.log
+
+# OS / editor noise
+.DS_Store
+.vscode/
+.idea/
+
+# Environment variables / secrets
+.env

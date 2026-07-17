@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}New Forecast — Hail Libraries{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Forecast engine · XGBoost model</span>
+    <h1>New Forecast</h1>
+    <p>Enter the branch and weather details step by step. The forecast is saved to the records, tagged as "Predicted"</p>
+  </div>
+</div>
+
+<div class="wizard">
+  <div class="stepper" id="stepper">
+    <div class="step active" data-step="1"><div class="dot">1</div><div class="label">Date &amp; Time</div></div>
+    <div class="step" data-step="2"><div class="dot">2</div><div class="label">Weather</div></div>
+    <div class="step" data-step="3"><div class="dot">3</div><div class="label">Branch &amp; Category</div></div>
+    <div class="step" data-step="4"><div class="dot">4</div><div class="label">Review &amp; Confirm</div></div>
+  </div>
+
+  <div class="wizard-panel">
+    <div class="error-banner" id="error-banner"></div>
+
+    <!-- Step 1 -->
+    <form id="wizard-form">
+    <div class="wizard-step active" data-step="1">
+      <h3 class="wizard-title">Date &amp; Time</h3>
+      <p class="wizard-desc">Choose the day and hour to forecast rentals for</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="Date">Date</label>
+          <input type="date" id="Date" name="Date" required>
+        </div>
+        <div class="field">
+          <label for="Hour">Hour (0–23)</label>
+          <input type="number" id="Hour" name="Hour" min="0" max="23" required placeholder="e.g. 14">
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="wizard-step" data-step="2">
+      <h3 class="wizard-title">Weather Conditions</h3>
+      <p class="wizard-desc">Expected weather values for this hour</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="Temperature_C">Temperature <span class="unit">(°C)</span></label>
+          <input type="number" step="0.1" id="Temperature_C" name="Temperature_C" required placeholder="e.g. 32">
+        </div>
+        <div class="field">
+          <label for="Humidity_pct">Humidity <span class="unit">(%)</span></label>
+          <input type="number" step="0.1" id="Humidity_pct" name="Humidity_pct" required placeholder="e.g. 40">
+        </div>
+        <div class="field">
+          <label for="Wind_Speed_ms">Wind Speed <span class="unit">(m/s)</span></label>
+          <input type="number" step="0.1" id="Wind_Speed_ms" name="Wind_Speed_ms" required placeholder="e.g. 3.2">
+        </div>
+        <div class="field">
+          <label for="Visibility_m">Visibility <span class="unit">(m)</span></label>
+          <input type="number" step="1" id="Visibility_m" name="Visibility_m" required placeholder="e.g. 9000">
+        </div>
+        <div class="field">
+          <label for="Solar_Radiation_MJm2">Solar Radiation <span class="unit">(MJ/m²)</span></label>
+          <input type="number" step="0.01" id="Solar_Radiation_MJm2" name="Solar_Radiation_MJm2" required placeholder="e.g. 2.1">
+        </div>
+        <div class="field">
+          <label for="Rainfall_mm">Rainfall <span class="unit">(mm)</span></label>
+          <input type="number" step="0.1" id="Rainfall_mm" name="Rainfall_mm" required placeholder="e.g. 0" value="0">
+        </div>
+        <div class="field">
+          <label for="Season">Season</label>
+          <select id="Season" name="Season">
+            {% for opt in options.Season %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="Holiday">Is it a holiday?</label>
+          <select id="Holiday" name="Holiday">
+            {% for opt in options.Holiday %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="wizard-step" data-step="3">
+      <h3 class="wizard-title">Branch, Category &amp; Membership</h3>
+      <p class="wizard-desc">Operating context for this hour</p>
+      <div class="field-grid">
+        <div class="field">
+          <label for="Library_Branch">Branch</label>
+          <select id="Library_Branch" name="Library_Branch">
+            {% for opt in options.Library_Branch %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="Top_Category">Top Category</label>
+          <select id="Top_Category" name="Top_Category">
+            {% for opt in options.Top_Category %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="Membership_Type">Dominant Membership Type</label>
+          <select id="Membership_Type" name="Membership_Type">
+            {% for opt in options.Membership_Type %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="wizard-step" data-step="4">
+      <h3 class="wizard-title">Review &amp; Confirm</h3>
+      <p class="wizard-desc">Double-check the data before running the model</p>
+      <div class="review-grid" id="review-grid"></div>
+    </div>
+    </form>
+
+    <!-- Result (replaces panel content on success) -->
+    <div class="wizard-step" data-step="result" id="result-step">
+      <div class="result-card">
+        <div class="stamp-big"><span class="num" id="result-num">0</span><span class="unit">rentals forecast</span></div>
+        <h3>Forecast saved to records</h3>
+        <p id="result-sub">Tagged as "Predicted" — record no. <span id="result-id" class="mono"></span></p>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="btn-new-prediction">Run Another Forecast</button>
+          <a href="/records" class="btn btn-ghost">View in Records</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-nav" id="wizard-nav">
+      <button type="button" class="btn btn-ghost" id="btn-back" disabled>Back</button>
+      <button type="button" class="btn btn-primary" id="btn-next">Next</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,32 @@
+# Raw data & notebooks — not needed at serving time, keep the image small
+# (hail_library_rentals.csv is kept: app.py seeds rentals.db from it on first run)
+*.csv
+!hail_library_rentals.csv
+*.ipynb
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+venv/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+app.log
+
+# OS / editor noise
+.DS_Store
+.vscode/
+.idea/
+
+# Docs (optional — keep these out of the image too, README isn't needed at runtime)
+README.md
+TROUBLESHOOTING.md

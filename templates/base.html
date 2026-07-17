@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Hail Libraries — Rental Forecasting{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="ledger-texture"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-mark">H</span>
+      <span class="brand-text">
+        <strong>Hail Libraries</strong>
+        <small>Rental Forecasting System</small>
+      </span>
+    </a>
+    <nav class="main-nav">
+      <a href="/" class="{{ 'active' if active=='dashboard' else '' }}">Dashboard</a>
+      <a href="/predict-form" class="{{ 'active' if active=='predict' else '' }}">New Forecast</a>
+      <a href="/records" class="{{ 'active' if active=='records' else '' }}">Records</a>
+    </nav>
+  </div>
+</header>
+
+<main class="site-main">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <span>MLOps system for library rental forecasting — powered by XGBoost</span>
+</footer>
+
+<div class="toast" id="global-toast"></div>
+
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

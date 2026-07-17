@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Hail Libraries{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Overview · Live database</span>
+    <h1>Rental Forecasting Dashboard</h1>
+    <p>Metrics built from real historical records and model forecasts, together in one place</p>
+  </div>
+</div>
+
+<div class="stat-grid" id="stat-grid">
+  <div class="card catalog-card"><span class="stat-label">Total Records</span><span class="stat-value">—</span></div>
+  <div class="card catalog-card"><span class="stat-label">Actual Data</span><span class="stat-value">—</span></div>
+  <div class="card catalog-card"><span class="stat-label">Model Forecasts</span><span class="stat-value">—</span></div>
+  <div class="card catalog-card"><span class="stat-label">Avg. Rentals / Hour</span><span class="stat-value">—</span></div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Daily Trend</h2>
+      <span class="hint">Actual vs. forecast</span>
+    </div>
+    <div class="chart-box"><canvas id="chart-daily" height="260"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Average Rentals by Hour</h2>
+    </div>
+    <div class="chart-box"><canvas id="chart-hourly" height="260"></canvas></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Performance by Branch</h2>
+    </div>
+    <div class="chart-box"><canvas id="chart-branch" height="240"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Most Borrowed Categories</h2>
+    </div>
+    <div class="chart-box"><canvas id="chart-category" height="240"></canvas></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Recent Records</h2>
+    <a href="/records" class="btn btn-ghost" style="padding:7px 16px; font-size:12.5px;">View full record →</a>
+  </div>
+  <div class="table-wrap">
+    <table class="ledger" id="recent-table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Hour</th><th>Branch</th><th>Category</th>
+          <th>Rentals</th><th>Source</th>
+        </tr>
+      </thead>
+      <tbody><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+(function loadChartJs(urls, i) {
+  i = i || 0;
+  if (i >= urls.length) { window.__chartLoadFailed = true; return; }
+  var s = document.createElement("script");
+  s.src = urls[i];
+  s.onerror = function () { loadChartJs(urls, i + 1); };
+  document.head.appendChild(s);
+})([
+  "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js",
+  "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js",
+  "https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js"
+]);
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
