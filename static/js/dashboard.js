@@ -62,6 +62,10 @@ async function loadDashboard() {
     subs[1].insertAdjacentHTML("beforeend", `<div class="stat-sub">Documented historical records</div>`);
     subs[2].insertAdjacentHTML("beforeend", `<div class="stat-sub">Forecasts added by the system</div>`);
     subs[3].insertAdjacentHTML("beforeend", `<div class="stat-sub">Across ${s.branches} branches</div>`);
+
+    // Sparklines + trend badges for each KPI card, built from the same
+    // daily_trend series already used by the main chart — no extra fetch.
+    attachStatSparklines(s, cards, subs);
   } catch (err) {
     console.error(err);
     showToast(err.message || "Could not load dashboard data");
@@ -74,6 +78,7 @@ async function loadDashboard() {
   if (statsData) {
     try {
       await waitForChart();
+      frameCharts();
       renderCharts(statsData);
     } catch (err) {
       console.error(err);
@@ -108,6 +113,42 @@ async function loadDashboard() {
   initButtonRipples();
 }
 
+// Builds a per-day series for a given Data_Source ("Actual" / "Predicted" /
+// null for both combined) from s.daily_trend, sorted chronologically.
+function seriesFromDailyTrend(s, source) {
+  const byDate = {};
+  (s.daily_trend || []).forEach(r => {
+    if (source && r.Data_Source !== source) return;
+    byDate[r.Date] = (byDate[r.Date] || 0) + Number(r.avg_rentals || 0);
+  });
+  return Object.keys(byDate).sort().map(d => byDate[d]);
+}
+
+function pctChange(series) {
+  if (!series || series.length < 2) return null;
+  const span = series.slice(-8); // last ~week
+  const first = span[0], last = span[span.length - 1];
+  if (!first) return null;
+  return ((last - first) / first) * 100;
+}
+
+function attachStatSparklines(s, cards, subs) {
+  const combined = seriesFromDailyTrend(s, null);
+  const actual = seriesFromDailyTrend(s, "Actual");
+  const predicted = seriesFromDailyTrend(s, "Predicted");
+
+  // Only a trend badge (▲/▼ %) per card — the full line chart already
+  // exists once, right below. Repeating a mini version of it on every
+  // card was visual noise rather than new information.
+  const specs = [combined, actual, predicted, combined];
+
+  specs.forEach((series, i) => {
+    if (!cards[i] || series.length < 2) return;
+    const badge = buildTrendBadge(pctChange(series));
+    if (badge) cards[i].insertAdjacentHTML("beforeend", badge);
+  });
+}
+
 function renderCharts(s) {
   const animBase = {
     duration: 1000,
@@ -137,19 +178,32 @@ function renderCharts(s) {
     }),
   });
 
-  // Hourly averages
-  const hours = [...Array(24).keys()];
+  // Hourly averages (show hours 8 → 23 to match visual)
+  const allHours = [...Array(24).keys()];
+  const hours = allHours.filter(h => h >= 8 && h <= 22);
   const hourlyActual = {};
   (s.hourly || []).forEach(r => { if (r.Data_Source === "Actual") hourlyActual[r.Hour] = r.avg_rentals; });
   new Chart(document.getElementById("chart-hourly").getContext("2d"), {
     type: "bar",
     data: {
       labels: hours,
-      datasets: [{ label: "Avg. rentals", data: hours.map(h => hourlyActual[h] ?? 0), backgroundColor: CHART_COLORS.actual, borderRadius: 3 }],
+      datasets: [{ label: "Avg. rentals", data: hours.map(h => Math.round(hourlyActual[h] ?? 0)), backgroundColor: '#a37c3f', borderRadius: 3 }],
     },
     options: baseChartOptions({
       plugins: { legend: { display: false } },
       animation: { ...animBase, delay: (ctx) => ctx.type === "data" ? ctx.dataIndex * 18 : 0 },
+      scales: {
+        x: {
+          min: 8,
+          max: 23,
+          grid: { display: true }
+        },
+        y: {
+          min: 0,
+          max: 70,
+          ticks: { stepSize: 10 }
+        }
+      }
     }),
   });
 

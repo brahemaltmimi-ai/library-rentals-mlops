@@ -30,6 +30,15 @@
   --font-display: "Fraunces", serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
+
+  /* ---- Premium "Reading Room" upgrade tokens ---- */
+  --brass-shine: linear-gradient(120deg, #7C5B21 0%, #C99A45 28%, #F3D08A 45%, #C99A45 62%, #7C5B21 100%);
+  --brass-shine-size: 220% 100%;
+  --gold-hair: rgba(163,121,47,0.5);
+  --shadow-deep: 0 2px 3px rgba(28,42,63,0.05), 0 22px 44px -20px rgba(28,42,63,0.28);
+  --shadow-glow-brass: 0 0 0 1px rgba(163,121,47,0.18), 0 10px 30px -12px rgba(163,121,47,0.45);
+  --shadow-glow-forest: 0 0 0 1px rgba(47,82,51,0.16), 0 10px 26px -12px rgba(47,82,51,0.4);
+  --shadow-glow-oxblood: 0 0 0 1px rgba(139,58,50,0.16), 0 10px 26px -12px rgba(139,58,50,0.4);
 }
 
 *{ box-sizing:border-box; }
@@ -85,6 +94,36 @@ html{ scroll-behavior:smooth; }
 @keyframes rowFadeOut{
   from{ opacity:1; }
   to{ opacity:0; transform: translateX(8px); }
+}
+
+/* ---- Premium motion additions ---- */
+@keyframes shineSweep{
+  0%{ background-position: 220% 0; }
+  100%{ background-position: -20% 0; }
+}
+@keyframes goldGlowPulse{
+  0%{ box-shadow: 0 0 0 0 rgba(163,121,47,0.0), var(--shadow-card); }
+  35%{ box-shadow: 0 0 0 6px rgba(212,163,79,0.22), var(--shadow-glow-brass); }
+  100%{ box-shadow: 0 0 0 0 rgba(163,121,47,0), var(--shadow-card); }
+}
+@keyframes seal-stamp-drop{
+  0%{ opacity:0; transform: translateY(-6px) scale(1.15) rotate(-6deg); }
+  60%{ opacity:1; transform: translateY(1px) scale(.98) rotate(2deg); }
+  100%{ opacity:1; transform: translateY(0) scale(1) rotate(0); }
+}
+@keyframes driftUp{
+  from{ transform: translate3d(0,110%,0); opacity:0; }
+  8%{ opacity: var(--mote-o, .5); }
+  92%{ opacity: var(--mote-o, .5); }
+  to{ transform: translate3d(var(--mote-dx,10px), -18%, 0); opacity:0; }
+}
+@keyframes sparkDraw{
+  from{ stroke-dashoffset: var(--spark-len, 240); }
+  to{ stroke-dashoffset: 0; }
+}
+@keyframes underlineGrow{
+  from{ transform: scaleX(0); }
+  to{ transform: scaleX(1); }
 }
 tr.removing{ animation: rowFadeOut .28s ease forwards; background: var(--oxblood-soft) !important; }
 
@@ -421,3 +460,137 @@ table.ledger tbody tr.row-anim{ opacity:0; animation: fadeInUp .42s cubic-bezier
 }
 .skeleton-row td{ padding:12px 10px; }
 .skeleton-row .skeleton{ width:100%; max-width:80px; height:12px; }
+
+/* =========================================================
+   PREMIUM UPGRADE — "Reading Room, Golden Hour"
+   Signature: dust-motes drifting through a shaft of window
+   light behind brass card-catalog drawers. Every KPI reads
+   like a pulled drawer card; every chart sits in a brass
+   card-frame; every button carries a hairline brass shine.
+   Injected DOM (dust canvas, chart frames, sparklines) is
+   added by common.js / dashboard.js — this file only styles it.
+   ========================================================= */
+
+/* ---------- Ambient light shaft + dust motes ---------- */
+.light-shaft{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 42% at 78% -6%, rgba(228,182,94,0.09), transparent 60%),
+    radial-gradient(40% 30% at 18% 4%, rgba(228,182,94,0.05), transparent 65%);
+}
+#dust-canvas{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  mix-blend-mode: multiply;
+  opacity:.6;
+}
+@media (prefers-reduced-motion: reduce){
+  #dust-canvas, .light-shaft{ display:none; }
+}
+
+/* ---------- Letterpress heading depth ---------- */
+.page-head h1, .wizard-title, .panel-head h2, .modal-card h3, .result-card h3{
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+}
+.page-head h1{
+  background: linear-gradient(100deg, var(--ink) 40%, var(--brass-deep) 62%, var(--ink) 78%);
+  -webkit-background-clip: text; background-clip:text;
+}
+.eyebrow{ position:relative; }
+.eyebrow::after{
+  content:""; display:block; width:34px; height:2px; margin-top:7px;
+  background: var(--brass); transform-origin:left; animation: underlineGrow .5s cubic-bezier(.16,.8,.24,1) .2s both;
+}
+
+/* ---------- Drawer-style KPI / catalog cards ---------- */
+.catalog-card{
+  --accent: var(--brass);
+  isolation:isolate;
+}
+.catalog-card::before{
+  content:""; position:absolute; top:0; inset-inline-start:18px; width:30px; height:6px;
+  background: var(--brass-shine); background-size: var(--brass-shine-size);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 1px 2px rgba(28,42,63,0.25);
+}
+.catalog-card:hover::before{ animation: shineSweep 1.1s linear 1; }
+.catalog-card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5), transparent 40%),
+    var(--paper-card);
+  transform-style: preserve-3d; will-change: transform;
+}
+.catalog-card:hover{ box-shadow: var(--shadow-raised); }
+.catalog-card.updated{ animation: goldGlowPulse .9s ease-out; }
+
+.stat-value{ position:relative; }
+.stat-value .stat-trend{
+  display:inline-flex; align-items:center; gap:3px; margin-inline-start:10px;
+  font-family: var(--font-mono); font-size:11.5px; font-weight:600; vertical-align:middle;
+  padding:2px 7px 2px 6px; border-radius:10px; letter-spacing:.2px;
+  animation: fadeIn .4s ease .5s both;
+}
+.stat-trend.up{ color:var(--forest); background: var(--forest-soft); }
+.stat-trend.down{ color:var(--oxblood); background: var(--oxblood-soft); }
+.stat-trend.flat{ color:var(--ink-faint); background: var(--paper-dim); }
+.stat-trend svg{ width:10px; height:10px; }
+
+.stat-spark{ display:block; width:100%; height:30px; margin-top:10px; overflow:visible; }
+.stat-spark path.spark-line{
+  fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray: var(--spark-len, 240); stroke-dashoffset: var(--spark-len, 240);
+  animation: sparkDraw 1.1s cubic-bezier(.16,.8,.24,1) .15s forwards;
+}
+.stat-spark path.spark-fill{ opacity:.12; }
+.stat-spark circle.spark-dot{ opacity:0; animation: fadeIn .3s ease 1.1s forwards; }
+
+/* ---------- Chart card-frame (brass corner brackets) ---------- */
+.chart-frame{
+  position:relative; padding:16px 14px 8px;
+  border-radius: var(--radius);
+}
+.chart-frame::before, .chart-frame::after,
+.chart-frame .bracket-tr, .chart-frame .bracket-bl{
+  content:""; position:absolute; width:16px; height:16px; pointer-events:none;
+  border-color: var(--brass); opacity:.55;
+}
+.chart-frame::before{ top:0; inset-inline-start:0; border-top:2px solid; border-inline-start:2px solid; }
+.chart-frame .bracket-tr{ top:0; inset-inline-end:0; border-top:2px solid; border-inline-end:2px solid; }
+.chart-frame::after{ bottom:0; inset-inline-end:0; border-bottom:2px solid; border-inline-end:2px solid; }
+.chart-frame .bracket-bl{ bottom:0; inset-inline-start:0; border-bottom:2px solid; border-inline-start:2px solid; }
+.chart-frame:hover::before, .chart-frame:hover::after,
+.chart-frame:hover .bracket-tr, .chart-frame:hover .bracket-bl{ opacity:1; transition: opacity .25s ease; }
+
+/* ---------- Buttons: brass shine sweep ---------- */
+.btn-primary{
+  background-image: var(--brass-shine); background-size: var(--brass-shine-size); background-color: var(--brass);
+}
+.btn-primary:hover:not(:disabled){ animation: shineSweep .9s linear 1; }
+
+/* ---------- Result seal: richer stamp drop ---------- */
+.result-card .stamp-big{ animation: seal-stamp-drop .7s cubic-bezier(.2,.9,.3,1.2) both, goldGlowPulse 2.4s ease-in-out .8s 2; }
+
+/* ---------- 3D tilt (applied via JS to .tilt) ---------- */
+.tilt{ transform: perspective(900px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) translateZ(0); transition: transform .5s cubic-bezier(.16,.8,.24,1); }
+.tilt:hover{ transition: transform .05s linear; }
+
+/* ---------- Refined scrollbar ---------- */
+::-webkit-scrollbar{ width:11px; height:11px; }
+::-webkit-scrollbar-track{ background: var(--paper); }
+::-webkit-scrollbar-thumb{ background: var(--paper-dim); border-radius:8px; border:2px solid var(--paper); }
+::-webkit-scrollbar-thumb:hover{ background: var(--brass); }
+*{ scrollbar-color: var(--paper-dim) var(--paper); scrollbar-width: thin; }
+
+/* ---------- Panel hover lift ---------- */
+.panel{ transition: box-shadow .3s ease, transform .3s ease; }
+.panel:hover{ box-shadow: var(--shadow-deep); }
+
+/* ---------- Live badge ---------- */
+.live-badge{
+  display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono);
+  font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--forest);
+}
+.live-badge .dot{
+  width:6px; height:6px; border-radius:50%; background:var(--forest);
+  box-shadow: 0 0 0 0 rgba(47,82,51,0.5);
+  animation: brandPulse 2s ease-in-out infinite;
+}
